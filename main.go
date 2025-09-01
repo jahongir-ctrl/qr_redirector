@@ -2,16 +2,40 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
-	"sync/atomic"
+	"sync"
 )
 
-var counter uint64
+var (
+	counter int
+	mu      sync.Mutex
+	file    = "counter.txt"
+)
+
+func loadCounter() {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		counter = 0
+		return
+	}
+	counter, _ = strconv.Atoi(strings.TrimSpace(string(data)))
+}
+
+func saveCounter() {
+	ioutil.WriteFile(file, []byte(strconv.Itoa(counter)), 0644)
+}
 
 func main() {
+	loadCounter()
 	http.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddUint64(&counter, 1)
+		mu.Lock()
+		counter++
+		saveCounter()
+		mu.Unlock()
+
 		ua := strings.ToLower(r.UserAgent())
 
 		if strings.Contains(ua, "android") {
@@ -27,7 +51,7 @@ func main() {
 	})
 
 	http.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("всего отсканировано : %d", atomic.LoadUint64(&counter))
+		fmt.Printf("всего отсканировано : %d", counter)
 	})
 
 	port := "8080"
