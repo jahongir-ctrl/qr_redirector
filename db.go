@@ -9,7 +9,7 @@ import (
 
 func InitDB() *sql.DB {
 
-	connStr := "host = localhost user=postgres password=jhg_3399 dbname=scan_db sslmode=disable"
+	connStr := "host=dpg-d2slqke3jp1c73avj8tg-a.oregon-postgres.render.com user=jahongir password=5MuzGZpcVMyRM3AS4HaRyYAkXxjTgWFR dbname=scan_db_2n5k port=5432 sslmode=require"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Ошибка подключения к БД", err)
